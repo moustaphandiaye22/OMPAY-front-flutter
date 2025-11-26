@@ -7,12 +7,17 @@ import '../services/api_service.dart';
 import '../services/auth_provider.dart';
 import '../services/payment_provider.dart';
 import '../services/transfer_provider.dart';
+import '../services/theme_provider.dart';
+import '../services/language_provider.dart';
 import '../features/auth/auth_service.dart';
 import '../features/wallet/wallet_service.dart';
 import '../features/transfer/transfer_service.dart';
 import '../features/payment/payment_service.dart';
 
 class ServiceLocator {
+  // Pour émulateur Android: 10.0.2.2 pointe vers localhost de la machine hôte
+  // Pour iOS simulator: localhost fonctionne
+  // Pour téléphone réel: utiliser l'IP de la machine hôte
   static const String baseUrl = 'http://localhost:8000/api';
 
   late final ApiService _apiService;
@@ -25,6 +30,8 @@ class ServiceLocator {
   late final AuthProvider _authProvider;
   late final PaymentProvider _paymentProvider;
   late final TransferProvider _transferProvider;
+  late final ThemeProvider _themeProvider;
+  late final LanguageProvider _languageProvider;
 
   ServiceLocator() {
     _initializeSync();
@@ -41,6 +48,8 @@ class ServiceLocator {
     _authProvider = AuthProvider(_authService);
     _paymentProvider = PaymentProvider(_paymentService);
     _transferProvider = TransferProvider(_transferService);
+    _themeProvider = ThemeProvider();
+    _languageProvider = LanguageProvider();
   }
 
   // Services
@@ -53,4 +62,6 @@ class ServiceLocator {
   AuthProvider get authProvider => _authProvider;
   PaymentProvider get paymentProvider => _paymentProvider;
   TransferProvider get transferProvider => _transferProvider;
+  ThemeProvider get themeProvider => _themeProvider;
+  LanguageProvider get languageProvider => _languageProvider;
 }

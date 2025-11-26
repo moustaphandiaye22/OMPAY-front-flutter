@@ -5,6 +5,8 @@ import 'package:frontend/features/home/pages/home_page.dart';
 import 'package:frontend/services/auth_provider.dart';
 import 'package:frontend/services/payment_provider.dart';
 import 'package:frontend/services/transfer_provider.dart';
+import 'package:frontend/services/theme_provider.dart';
+import 'package:frontend/services/language_provider.dart';
 import 'package:frontend/utils/service_locator.dart';
 
 void main() {
@@ -16,6 +18,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => AuthProvider(serviceLocator.authService)),
         ChangeNotifierProvider(create: (_) => serviceLocator.paymentProvider),
         ChangeNotifierProvider(create: (_) => serviceLocator.transferProvider),
+        ChangeNotifierProvider(create: (_) => serviceLocator.themeProvider),
+        ChangeNotifierProvider(create: (_) => serviceLocator.languageProvider),
       ],
       child: const MyApp(),
     ),
@@ -28,13 +32,12 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       title: 'OM Pay',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
-        useMaterial3: true,
-      ),
+      theme: themeProvider.currentTheme,
       home: const AuthWrapper(),
     );
   }

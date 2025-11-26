@@ -1,3 +1,32 @@
+/// Données du QR Code utilisateur
+class QRCodeData {
+  final String id;
+  final String donnees;
+  final DateTime dateGeneration;
+
+  QRCodeData({
+    required this.id,
+    required this.donnees,
+    required this.dateGeneration,
+  });
+
+  factory QRCodeData.fromJson(Map<String, dynamic> json) {
+    return QRCodeData(
+      id: json['id'] as String,
+      donnees: json['donnees'] as String,
+      dateGeneration: DateTime.parse(json['dateGeneration']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'donnees': donnees,
+      'dateGeneration': dateGeneration.toIso8601String(),
+    };
+  }
+}
+
 /// Entité Utilisateur - correspond au modèle Laravel Utilisateur
 class User {
   final String id;
@@ -12,6 +41,7 @@ class User {
   final DateTime? derniereConnexion;
   final String? otp;
   final DateTime? otpExpiresAt;
+  final QRCodeData? qrCode;
 
   User({
     required this.id,
@@ -26,6 +56,7 @@ class User {
     this.derniereConnexion,
     this.otp,
     this.otpExpiresAt,
+    this.qrCode,
   });
 
   /// Nom complet calculé
@@ -58,6 +89,9 @@ class User {
           : json['otp_expires_at'] != null
               ? DateTime.parse(json['otp_expires_at'])
               : null,
+      qrCode: json['qrCode'] != null
+          ? QRCodeData.fromJson(json['qrCode'])
+          : null,
     );
   }
 

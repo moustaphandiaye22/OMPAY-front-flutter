@@ -88,9 +88,11 @@ class AuthProvider extends ChangeNotifier {
   bool get isPayerSelected => _isPayerSelected;
   String get userName => _user?.nom ?? 'Utilisateur';
   String get userId => _user?.id ?? '';
+  String get userPhone => _user?.numeroTelephone ?? '';
   String get userBalance => _wallet?.solde?.toString() ?? '0';
   bool get balanceVisible => _balanceVisible;
   String get displayBalance => _balanceVisible ? '${userBalance} FCFA' : '******* FCFA';
+  String get userQRCodeData => _user?.qrCode?.donnees ?? userPhone; // Numéro de téléphone comme QR code
   List<Transaction> get transactions => _transactions;
   List<Payment> get payments => _transactions.whereType<Payment>().toList();
   List<Transfer> get transfers => _transactions.whereType<Transfer>().toList();
