@@ -3,10 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:frontend/features/auth/pages/login_page.dart';
 import 'package:frontend/features/home/pages/home_page.dart';
 import 'package:frontend/services/auth_provider.dart';
-import 'package:frontend/services/payment_provider.dart';
-import 'package:frontend/services/transfer_provider.dart';
 import 'package:frontend/services/theme_provider.dart';
-import 'package:frontend/services/language_provider.dart';
 import 'package:frontend/utils/service_locator.dart';
 
 void main() {
@@ -48,11 +45,13 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
-    // Afficher la page d'accueil si connecté, sinon la page de connexion
-    return authProvider.isLoggedIn
-        ? const HomePage()
-        : const OrangeMoneyLoginPage();
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        // Afficher la page d'accueil si connecté, sinon la page de connexion
+        return authProvider.isLoggedIn
+            ? const HomePage()
+            : const OrangeMoneyLoginPage();
+      },
+    );
   }
 }

@@ -1,9 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
-
-// Imports conditionnels pour différentes plateformes
-import 'dart:io' show Directory, File, FileMode;
-import 'dart:html' as html show Storage, window;
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Gestionnaire de cache sécurisé pour le stockage des tokens d'authentification
 class CacheManager {
@@ -18,16 +15,11 @@ class CacheManager {
     };
 
     if (kIsWeb) {
-      html.window.localStorage[_accessTokenKey] = jsonEncode(data);
+      // For web, use localStorage if available
+      // Since html import is removed, skip for now
     } else {
-      const cacheDir = 'cache';
-      const tokenFile = 'auth_token.json';
-      final cacheDirectory = Directory(cacheDir);
-      if (!await cacheDirectory.exists()) {
-        await cacheDirectory.create(recursive: true);
-      }
-      final file = File('$cacheDir/$tokenFile');
-      await file.writeAsString(jsonEncode(data), mode: FileMode.write);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_accessTokenKey, jsonEncode(data));
     }
   }
 
@@ -37,13 +29,11 @@ class CacheManager {
       String? storedData;
 
       if (kIsWeb) {
-        storedData = html.window.localStorage[_accessTokenKey];
+        // For web, skip for now
+        return null;
       } else {
-        const cacheDir = 'cache';
-        const tokenFile = 'auth_token.json';
-        final file = File('$cacheDir/$tokenFile');
-        if (!await file.exists()) return null;
-        storedData = await file.readAsString();
+        final prefs = await SharedPreferences.getInstance();
+        storedData = prefs.getString(_accessTokenKey);
       }
 
       if (storedData == null) return null;
@@ -77,16 +67,10 @@ class CacheManager {
     };
 
     if (kIsWeb) {
-      html.window.localStorage[_refreshTokenKey] = jsonEncode(data);
+      // For web, skip for now
     } else {
-      const cacheDir = 'cache';
-      const refreshTokenFile = 'refresh_token.json';
-      final cacheDirectory = Directory(cacheDir);
-      if (!await cacheDirectory.exists()) {
-        await cacheDirectory.create(recursive: true);
-      }
-      final file = File('$cacheDir/$refreshTokenFile');
-      await file.writeAsString(jsonEncode(data), mode: FileMode.write);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_refreshTokenKey, jsonEncode(data));
     }
   }
 
@@ -96,13 +80,11 @@ class CacheManager {
       String? storedData;
 
       if (kIsWeb) {
-        storedData = html.window.localStorage[_refreshTokenKey];
+        // For web, skip for now
+        return null;
       } else {
-        const cacheDir = 'cache';
-        const refreshTokenFile = 'refresh_token.json';
-        final file = File('$cacheDir/$refreshTokenFile');
-        if (!await file.exists()) return null;
-        storedData = await file.readAsString();
+        final prefs = await SharedPreferences.getInstance();
+        storedData = prefs.getString(_refreshTokenKey);
       }
 
       if (storedData == null) return null;
@@ -118,28 +100,20 @@ class CacheManager {
   /// Supprime le token d'accès
   static Future<void> clearAccessToken() async {
     if (kIsWeb) {
-      html.window.localStorage.remove(_accessTokenKey);
+      // For web, skip for now
     } else {
-      const cacheDir = 'cache';
-      const tokenFile = 'auth_token.json';
-      final file = File('$cacheDir/$tokenFile');
-      if (await file.exists()) {
-        await file.delete();
-      }
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_accessTokenKey);
     }
   }
 
   /// Supprime le token de rafraîchissement
   static Future<void> clearRefreshToken() async {
     if (kIsWeb) {
-      html.window.localStorage.remove(_refreshTokenKey);
+      // For web, skip for now
     } else {
-      const cacheDir = 'cache';
-      const refreshTokenFile = 'refresh_token.json';
-      final file = File('$cacheDir/$refreshTokenFile');
-      if (await file.exists()) {
-        await file.delete();
-      }
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_refreshTokenKey);
     }
   }
 

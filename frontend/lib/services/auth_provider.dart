@@ -60,7 +60,8 @@ class AuthProvider extends ChangeNotifier {
       }
 
     } catch (e) {
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      final errorText = e.toString();
+      _errorMessage = errorText.replaceAll('Exception: ', '');
       _isLoading = false;
       notifyListeners();
     }
@@ -76,6 +77,7 @@ class AuthProvider extends ChangeNotifier {
   bool _isOTPRequested = false;
   int _otpResendTimer = 0;
   bool _canResendOTP = true;
+  String? _simulatedOtp; // OTP simulé pour les tests
 
   // Home/Payment Management
   bool _isPayerSelected = true;
@@ -111,10 +113,7 @@ class AuthProvider extends ChangeNotifier {
   // Load user data from API
   Future<void> loadUserData() async {
     try {
-      print('🔄 Loading user data from API...');
       final accountResponse = await _authService.consulterCompte();
-      print('📡 API Response success: ${accountResponse.success}');
-      print('📡 API Response data: ${accountResponse.data}');
 
       if (accountResponse.success && accountResponse.data != null) {
         final accountData = accountResponse.data!;
@@ -124,75 +123,17 @@ class AuthProvider extends ChangeNotifier {
         _wallet = accountData.compte;
         _transactions = accountData.transactions;
 
-        print('🎉 User data loaded successfully!');
-        print('👤 User: ${_user?.nom}');
-        print('💰 Balance: ${_wallet?.solde}');
-        print('📊 Transactions: ${_transactions.length}');
-
         notifyListeners();
       } else {
-        print('❌ API call failed: ${accountResponse.message}');
         // Ne pas créer de données fictives si l'utilisateur est connecté
         // Laisser les données nulles pour éviter les conflits
         notifyListeners();
       }
     } catch (e) {
-      print('❌ Error loading user data: $e');
       // Ne pas créer de données fictives en cas d'erreur
       // Laisser les données nulles
       notifyListeners();
     }
-  }
-
-  // Créer des transactions fictives réalistes pour la démonstration
-  List<Transaction> _createDemoTransactions() {
-    return [
-      Transaction(
-        id: 'demo-tx-1',
-        idPortefeuille: 'demo-wallet-id',
-        type: 'paiement',
-        montant: 2500.0,
-        devise: 'FCFA',
-        statut: 'reussie',
-        dateTransaction: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-      Transaction(
-        id: 'demo-tx-2',
-        idPortefeuille: 'demo-wallet-id',
-        type: 'transfert',
-        montant: 1500.0,
-        devise: 'FCFA',
-        statut: 'reussie',
-        dateTransaction: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      Transaction(
-        id: 'demo-tx-3',
-        idPortefeuille: 'demo-wallet-id',
-        type: 'paiement',
-        montant: 7500.0,
-        devise: 'FCFA',
-        statut: 'reussie',
-        dateTransaction: DateTime.now().subtract(const Duration(hours: 3)),
-      ),
-      Transaction(
-        id: 'demo-tx-4',
-        idPortefeuille: 'demo-wallet-id',
-        type: 'paiement',
-        montant: 3200.0,
-        devise: 'FCFA',
-        statut: 'reussie',
-        dateTransaction: DateTime.now().subtract(const Duration(hours: 12)),
-      ),
-      Transaction(
-        id: 'demo-tx-5',
-        idPortefeuille: 'demo-wallet-id',
-        type: 'transfert',
-        montant: 5000.0,
-        devise: 'FCFA',
-        statut: 'reussie',
-        dateTransaction: DateTime.now().subtract(const Duration(hours: 24)),
-      ),
-    ];
   }
 
   // Refresh user data (for manual refresh)
@@ -213,11 +154,10 @@ class AuthProvider extends ChangeNotifier {
   bool get isOTPRequested => _isOTPRequested;
   int get otpResendTimer => _otpResendTimer;
   bool get canResendOTP => _canResendOTP;
+  String? get simulatedOtp => _simulatedOtp;
 
   // Request OTP
   Future<void> requestOTP() async {
-    print('AuthProvider.requestOTP called with phone: ${_phoneController.text}');
-
     if (_phoneController.text.isEmpty) {
       _errorMessage = 'Veuillez saisir votre numéro de téléphone';
       notifyListeners();
@@ -234,26 +174,29 @@ class AuthProvider extends ChangeNotifier {
         codeOtp: null,
       );
 
-      print('Calling _authService.connexion...');
+      print('🔄 Requesting OTP for: +221${_phoneController.text}');
       final response = await _authService.connexion(request);
-      print('AuthService response received: success=${response.success}, message=${response.message}');
+      print('📡 OTP Response: success=${response.success}, message=${response.message}');
+      print('📦 OTP Data: ${response.data}');
 
       if (response.success && response.data?['otpEnvoye'] == true) {
-        print('OTP request successful');
         _isOTPRequested = true;
+        _simulatedOtp = response.otpSimule; // Stocker l'OTP simulé
         _isLoading = false;
         _otpResendTimer = 60; // 60 secondes avant de pouvoir renvoyer
         _startResendTimer();
+        print('✅ OTP Requested successfully, simulated OTP: $_simulatedOtp');
         notifyListeners();
       } else {
-        print('OTP request failed: ${response.message}');
+        print('❌ OTP Request failed: ${response.message}');
         throw Exception(response.message);
       }
 
     } catch (e) {
-      print('AuthProvider.requestOTP error: $e');
-      _errorMessage = 'Erreur lors de l\'envoi de l\'OTP: ${e.toString().replaceAll('Exception: ', '')}';
+      final errorText = e.toString();
+      _errorMessage = 'Erreur lors de l\'envoi de l\'OTP: ${errorText.replaceAll('Exception: ', '')}';
       _isLoading = false;
+      print('💥 OTP Request error: $_errorMessage');
       notifyListeners();
     }
   }
@@ -277,22 +220,28 @@ class AuthProvider extends ChangeNotifier {
         codeOtp: otp,
       );
 
+      print('🔐 Verifying OTP: $otp for phone: +221${_phoneController.text}');
       final response = await _authService.connexion(request);
+      print('📡 OTP Verification Response: success=${response.success}, message=${response.message}');
 
       if (response.success && response.data?['jetonAcces'] != null) {
         _isLoggedIn = true;
+        print('✅ OTP Verified successfully, user logged in');
         // Load user data after successful login
         await loadUserData();
         _isLoading = false;
         notifyListeners();
-        // Navigate to home page would happen here
+        print('🏠 User data loaded, navigation to home should happen automatically');
       } else {
+        print('❌ OTP Verification failed: ${response.message}');
         throw Exception(response.message);
       }
 
     } catch (e) {
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      final errorText = e.toString();
+      _errorMessage = errorText.replaceAll('Exception: ', '');
       _isLoading = false;
+      print('💥 OTP Verification error: $_errorMessage');
       notifyListeners();
     }
   }
@@ -335,6 +284,7 @@ class AuthProvider extends ChangeNotifier {
     _isOTPRequested = false;
     _otpResendTimer = 0;
     _canResendOTP = true;
+    _simulatedOtp = null;
   }
 
   Future<void> logout() async {
@@ -342,7 +292,6 @@ class AuthProvider extends ChangeNotifier {
       await _authService.deconnexion();
     } catch (e) {
       // Even if logout fails, clear local state
-      print('Logout error: $e');
     }
 
     _isLoggedIn = false;

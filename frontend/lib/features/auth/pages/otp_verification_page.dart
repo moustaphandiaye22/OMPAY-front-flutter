@@ -4,10 +4,19 @@ import '../../../views/custom_orange_button.dart';
 import '../../../views/otp_input_group.dart';
 import '../../../services/auth_provider.dart';
 import '../../../utils/responsive_sizes.dart';
-import '../../home/pages/home_page.dart';
 
-class OTPVerificationPage extends StatelessWidget {
+class OTPVerificationPage extends StatefulWidget {
   const OTPVerificationPage({Key? key}) : super(key: key);
+
+  @override
+  State<OTPVerificationPage> createState() => _OTPVerificationPageState();
+}
+
+class _OTPVerificationPageState extends State<OTPVerificationPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +24,13 @@ class OTPVerificationPage extends StatelessWidget {
     final sizes = ResponsiveSizes.fromContext(context);
 
     return Scaffold(
-      body: Stack(
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
+          child: Stack(
         children: [
           // Image de fond avec overlay
           Positioned.fill(
@@ -65,8 +80,9 @@ class OTPVerificationPage extends StatelessWidget {
           // Contenu principal
           SafeArea(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Spacer(),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.1),
                 // Carte de vérification OTP
                 Container(
                   width: double.infinity,
@@ -126,20 +142,48 @@ class OTPVerificationPage extends StatelessWidget {
                             letterSpacing: 0,
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 16),
+                        // OTP simulé pour les tests (affiché seulement en développement/production simulée)
+                        if (authProvider.simulatedOtp != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF7900).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFFFF7900).withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.info_outline,
+                                  size: 20,
+                                  color: Color(0xFFFF7900),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Code de test: ${authProvider.simulatedOtp}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFFF7900),
+                                    letterSpacing: 2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(height: 16),
                         // Champs OTP
                         OTPInputGroup(
                           onCompleted: (otpCode) async {
                             await authProvider.verifyOTP(otpCode);
-
-                            // Navigation vers l'accueil si connexion réussie
+                            // Fermer la page OTP après vérification réussie
                             if (authProvider.isLoggedIn && authProvider.errorMessage == null) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const HomePage(),
-                                ),
-                              );
+                              Navigator.of(context).pop();
                             }
                           },
                         ),
@@ -213,10 +257,13 @@ class OTPVerificationPage extends StatelessWidget {
                     ),
                   ),
                 ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.1),
               ],
             ),
           ),
         ],
+          ),
+        ),
       ),
     );
   }

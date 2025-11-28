@@ -15,10 +15,9 @@ import '../features/transfer/transfer_service.dart';
 import '../features/payment/payment_service.dart';
 
 class ServiceLocator {
-  // Pour émulateur Android: 10.0.2.2 pointe vers localhost de la machine hôte
-  // Pour iOS simulator: localhost fonctionne
-  // Pour téléphone réel: utiliser l'IP de la machine hôte
-  static const String baseUrl = 'http://localhost:8000/api';
+  // Pour développement local: http://localhost:8000/api
+  // Pour production: https://ompay-orange-money.onrender.com/api
+  static const String baseUrl = 'https://ompay-orange-money.onrender.com/api';
 
   late final ApiService _apiService;
   late final AuthServiceInterface _authService;

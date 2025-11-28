@@ -1,8 +1,6 @@
 /// DTO pour les opérations de paiement
 library;
 
-import '../../models/entities/payment.dart';
-
 /// Requête d'effectuation de paiement
 class PaymentRequest {
   final double montant;
@@ -45,11 +43,7 @@ class PaymentResponse {
   final String message;
   final PaymentData? data;
 
-  PaymentResponse({
-    required this.success,
-    required this.message,
-    this.data,
-  });
+  PaymentResponse({required this.success, required this.message, this.data});
 
   factory PaymentResponse.fromJson(Map<String, dynamic> json) {
     return PaymentResponse(
@@ -69,7 +63,8 @@ class PaymentData {
   final String reference;
   final String? recu;
   final String modePaiement;
-  final MarchandData marchand;
+  final MarchandData? marchand;
+  final PaymentDestinataireData? destinataire;
 
   PaymentData({
     required this.idTransaction,
@@ -79,19 +74,28 @@ class PaymentData {
     required this.reference,
     this.recu,
     required this.modePaiement,
-    required this.marchand,
+    this.marchand,
+    this.destinataire,
   });
 
   factory PaymentData.fromJson(Map<String, dynamic> json) {
     return PaymentData(
       idTransaction: json['idTransaction'] as String,
       statut: json['statut'] as String,
-      montant: json['montant'] as String,
+      // Conversion défensive int -> String
+      montant: (json['montant'] is int)
+          ? (json['montant'] as int).toString()
+          : json['montant'] as String,
       dateTransaction: json['dateTransaction'] as String,
       reference: json['reference'] as String,
       recu: json['recu'] as String?,
       modePaiement: json['modePaiement'] as String,
-      marchand: MarchandData.fromJson(json['marchand']),
+      marchand: json['marchand'] != null
+          ? MarchandData.fromJson(json['marchand'])
+          : null,
+      destinataire: json['destinataire'] != null
+          ? PaymentDestinataireData.fromJson(json['destinataire'])
+          : null,
     );
   }
 
@@ -104,7 +108,8 @@ class PaymentData {
       'reference': reference,
       'recu': recu,
       'modePaiement': modePaiement,
-      'marchand': marchand.toJson(),
+      'marchand': marchand?.toJson(),
+      'destinataire': destinataire?.toJson(),
     };
   }
 }
@@ -114,10 +119,7 @@ class MarchandData {
   final String nom;
   final String numeroTelephone;
 
-  MarchandData({
-    required this.nom,
-    required this.numeroTelephone,
-  });
+  MarchandData({required this.nom, required this.numeroTelephone});
 
   factory MarchandData.fromJson(Map<String, dynamic> json) {
     return MarchandData(
@@ -127,9 +129,25 @@ class MarchandData {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'nom': nom,
-      'numeroTelephone': numeroTelephone,
-    };
+    return {'nom': nom, 'numeroTelephone': numeroTelephone};
+  }
+}
+
+/// Données du destinataire (pour paiements utilisateur)
+class PaymentDestinataireData {
+  final String nom;
+  final String numeroTelephone;
+
+  PaymentDestinataireData({required this.nom, required this.numeroTelephone});
+
+  factory PaymentDestinataireData.fromJson(Map<String, dynamic> json) {
+    return PaymentDestinataireData(
+      nom: json['nom'] as String,
+      numeroTelephone: json['numeroTelephone'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'nom': nom, 'numeroTelephone': numeroTelephone};
   }
 }

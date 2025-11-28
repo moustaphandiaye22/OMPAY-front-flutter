@@ -14,9 +14,6 @@ class HttpApiService implements ApiService {
     try {
       final headers = await _buildHeaders();
       final uri = Uri.parse('$baseUrl$endpoint');
-      print('Making POST request to: $uri');
-      print('Headers: $headers');
-      print('Body: ${jsonEncode(data)}');
 
       // Create a custom client for web with additional configuration
       final client = http.Client();
@@ -27,15 +24,11 @@ class HttpApiService implements ApiService {
           body: jsonEncode(data),
         ).timeout(const Duration(seconds: 30));
 
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
-
         return _handleResponse(response);
       } finally {
         client.close();
       }
     } catch (e) {
-      print('HTTP POST error: $e');
       rethrow;
     }
   }
@@ -44,13 +37,8 @@ class HttpApiService implements ApiService {
   Future<ApiResponse<Map<String, dynamic>>> get(String endpoint) async {
     final headers = await _buildHeaders();
     final uri = Uri.parse('$baseUrl$endpoint');
-    print('Making GET request to: $uri');
-    print('Headers: $headers');
 
     final response = await http.get(uri, headers: headers);
-
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
 
     return _handleResponse(response);
   }

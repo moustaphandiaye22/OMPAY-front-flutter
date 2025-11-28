@@ -58,13 +58,6 @@ class _OTPInputGroupState extends State<OTPInputGroup> {
     }
   }
 
-  void _onBackspace(int index) {
-    if (index > 0 && _controllers[index].text.isEmpty) {
-      // Revenir au champ précédent
-      _focusNodes[index - 1].requestFocus();
-    }
-  }
-
   void _onFieldTap(int index) {
     if (_controllers[index].text.isNotEmpty) {
       _controllers[index].clear();

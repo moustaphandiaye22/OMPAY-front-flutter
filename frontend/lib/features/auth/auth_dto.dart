@@ -123,9 +123,22 @@ class AuthResponse {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    // Some API responses use `message`, others return an `error` object
+    // with a `message` field. Be defensive and coerce to String with
+    // fallbacks to avoid `Null` -> `String` cast errors.
+    final success = json['success'] as bool? ?? false;
+    String message = '';
+    if (json['message'] != null) {
+      message = json['message'].toString();
+    } else if (json['error'] is Map && json['error']['message'] != null) {
+      message = json['error']['message'].toString();
+    } else if (json['error'] != null) {
+      message = json['error'].toString();
+    }
+
     return AuthResponse(
-      success: json['success'] as bool,
-      message: json['message'] as String,
+      success: success,
+      message: message,
       data: json['data'] as Map<String, dynamic>?,
     );
   }
@@ -140,6 +153,9 @@ class AuthResponse {
   User? get user => data?['utilisateur'] != null
       ? User.fromJson(data!['utilisateur'])
       : null;
+
+  /// OTP simulé pour les tests (uniquement en développement/production simulée)
+  String? get otpSimule => data?['otpSimule'];
 }
 
 /// Réponse de consultation de compte
@@ -155,9 +171,19 @@ class AccountResponse {
   });
 
   factory AccountResponse.fromJson(Map<String, dynamic> json) {
+    final success = json['success'] as bool? ?? false;
+    String message = '';
+    if (json['message'] != null) {
+      message = json['message'].toString();
+    } else if (json['error'] is Map && json['error']['message'] != null) {
+      message = json['error']['message'].toString();
+    } else if (json['error'] != null) {
+      message = json['error'].toString();
+    }
+
     return AccountResponse(
-      success: json['success'] as bool,
-      message: json['message'] as String,
+      success: success,
+      message: message,
       data: json['data'] != null ? AccountData.fromJson(json['data']) : null,
     );
   }
@@ -209,9 +235,19 @@ class ProfileResponse {
   });
 
   factory ProfileResponse.fromJson(Map<String, dynamic> json) {
+    final success = json['success'] as bool? ?? false;
+    String message = '';
+    if (json['message'] != null) {
+      message = json['message'].toString();
+    } else if (json['error'] is Map && json['error']['message'] != null) {
+      message = json['error']['message'].toString();
+    } else if (json['error'] != null) {
+      message = json['error'].toString();
+    }
+
     return ProfileResponse(
-      success: json['success'] as bool,
-      message: json['message'] as String,
+      success: success,
+      message: message,
       data: json['data'] != null ? ProfileData.fromJson(json['data']) : null,
     );
   }

@@ -1,8 +1,6 @@
 /// DTO pour les opérations de transfert
 library;
 
-import '../../models/entities/transfer.dart';
-
 /// Requête d'effectuation de transfert
 class TransferRequest {
   final String telephoneDestinataire;
@@ -59,8 +57,11 @@ class TransferResponse {
 /// Données de transfert
 class TransferData {
   final String idTransaction;
+  final String? idTransfert;
   final String statut;
   final String montant;
+  final String? frais;
+  final String? montantTotal;
   final String dateTransaction;
   final String reference;
   final String? recu;
@@ -68,8 +69,11 @@ class TransferData {
 
   TransferData({
     required this.idTransaction,
+    this.idTransfert,
     required this.statut,
     required this.montant,
+    this.frais,
+    this.montantTotal,
     required this.dateTransaction,
     required this.reference,
     this.recu,
@@ -79,8 +83,18 @@ class TransferData {
   factory TransferData.fromJson(Map<String, dynamic> json) {
     return TransferData(
       idTransaction: json['idTransaction'] as String,
+      idTransfert: json['idTransfert'] as String?,
       statut: json['statut'] as String,
-      montant: json['montant'] as String,
+      // Conversion défensive int -> String
+      montant: (json['montant'] is int)
+          ? (json['montant'] as int).toString()
+          : json['montant'] as String,
+      frais: (json['frais'] is int)
+          ? (json['frais'] as int).toString()
+          : json['frais'] as String?,
+      montantTotal: (json['montantTotal'] is int)
+          ? (json['montantTotal'] as int).toString()
+          : json['montantTotal'] as String?,
       dateTransaction: json['dateTransaction'] as String,
       reference: json['reference'] as String,
       recu: json['recu'] as String?,
@@ -91,8 +105,11 @@ class TransferData {
   Map<String, dynamic> toJson() {
     return {
       'idTransaction': idTransaction,
+      'idTransfert': idTransfert,
       'statut': statut,
       'montant': montant,
+      'frais': frais,
+      'montantTotal': montantTotal,
       'dateTransaction': dateTransaction,
       'reference': reference,
       'recu': recu,

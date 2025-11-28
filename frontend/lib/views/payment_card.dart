@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'custom_text_field.dart';
-import 'custom_orange_button.dart';
 
 class PaymentCard extends StatefulWidget {
   final bool isPayerSelected;
